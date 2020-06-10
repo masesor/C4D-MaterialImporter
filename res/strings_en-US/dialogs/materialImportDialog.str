@@ -1,0 +1,5 @@
+DIALOGSTRINGS materialImportDialog
+{
+  DIALOG_TITLE "Material Import";
+  OPEN_FOLDER "Click to open material directory";
+}
