@@ -13,6 +13,7 @@ MATERIAL_DIRECTORY_PATH = 100002
 # Octane IDs
 ID_OCTANE_DIFFUSE_MATERIAL = 1029501
 ID_OCTANE_IMAGE_TEXTURE = 1029508
+ID_OCTANE_SPECULAR_TYPE = 2511
 
 # Material IDs
 DIFFUSE = 'DIFFUSE'
@@ -99,6 +100,15 @@ class FileWalker():
   def get_files(self, path):
     return [join(path, f) for f in os.listdir(path) if isfile(join(path, f))]
 
+def create_octane_shader(file_path):
+  shd = c4d.BaseShader(ID_OCTANE_IMAGE_TEXTURE)
+  
+  shd[c4d.IMAGETEXTURE_FILE] = file_path
+  shd[c4d.IMAGETEXTURE_MODE] = 0
+  shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
+  shd[c4d.IMAGETEX_BORDER_MODE] = 0
+
+  return shd
 
 class MaterialImportDialog(c4d.gui.GeDialog):
   def CreateLayout(self):
@@ -114,16 +124,18 @@ class MaterialImportDialog(c4d.gui.GeDialog):
       material_parser = MaterialParser()
       material = material_parser.create_material(files)
 
-      doc = c4d.documents.GetActiveDocument()
       mat = c4d.BaseMaterial(ID_OCTANE_DIFFUSE_MATERIAL)
+      mat[c4d.OCT_MATERIAL_TYPE] = ID_OCTANE_SPECULAR_TYPE
+      
+      shader_diffuse = create_octane_shader(material.get_material_path("DIFFUSE"))
+      mat[c4d.OCT_MATERIAL_DIFFUSE_LINK] = shader_diffuse
+      shader_specular = create_octane_shader(material.get_material_path("SPECULAR"))
+      mat[c4d.OCT_MATERIAL_SPECULAR_LINK] = shader_specular
+      
+      mat.InsertShader(shader_diffuse)
+      mat.InsertShader(shader_specular)
 
-      shd = c4d.BaseShader(ID_OCTANE_IMAGE_TEXTURE)
-      mat.InsertShader(shd)
-      mat[c4d.OCT_MATERIAL_DIFFUSE_LINK] = shd
-      shd[c4d.IMAGETEXTURE_FILE] = material.get_material_path("DIFFUSE")
-      shd[c4d.IMAGETEXTURE_MODE] = 0
-      shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
-      shd[c4d.IMAGETEX_BORDER_MODE] = 0
+      doc = c4d.documents.GetActiveDocument()
       doc.InsertMaterial(mat)
 
     return super(MaterialImportDialog, self).Command(id, msg)
