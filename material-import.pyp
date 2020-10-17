@@ -1,4 +1,5 @@
 import c4d
+from c4d import gui
 import collections
 import os
 from os.path import isfile, join
@@ -7,6 +8,52 @@ PLUGIN_ID = 1025249
 
 materialImportDialog = 100001
 MATERIAL_DIRECTORY_PATH = 100002
+
+# OCtane IDs
+ID_OCTANE_DIFFUSE_MATERIAL = 1029501
+ID_OCTANE_IMAGE_TEXTURE = 1029508
+
+class MaterialParser():
+  self.diffuse_regex = '(?i).*(diffuse|diff|albedo|col|color|colour).*'
+  self.specular_regex = '(?i).*(spec|specular).*'
+  self.roughness_regex = '(?i).*(refl|reflection).*'
+  self.gloss_regex = '(?i).*(refl|reflection).*'
+  self.bump_regex = '(?i).*(bump).*'
+  self.normal_regex = '(?i).*(normal|nrm).*'
+  self.displacement_regex = '(?i).*(displacement|disp).*'
+  '''
+  regexes
+
+  - Diffuse 
+  diffuse
+  diff
+  albedo
+  col
+  color
+  colour
+
+
+  - Specular (Reflection)
+  _spec
+  specular
+
+  - Roughness (or gloss if inverted)
+  _refl_
+  reflection
+  gloss (invert)
+
+  - Bump 
+  bump
+
+  - Normal 
+  normal
+  nrm
+
+
+  - Displacement
+  displacement
+  disp
+  '''
 
 class FileWalker():
   def print_files(self, path):
@@ -23,6 +70,18 @@ class MaterialImportDialog(c4d.gui.GeDialog):
       file_path = self.GetString(MATERIAL_DIRECTORY_PATH)
       walker = FileWalker()
       walker.print_files(file_path)
+
+      doc = c4d.documents.GetActiveDocument()
+      mat = c4d.BaseMaterial(ID_OCTANE_DIFFUSE_MATERIAL)
+
+      shd = c4d.BaseShader(ID_OCTANE_IMAGE_TEXTURE)
+      mat.InsertShader(shd)
+      mat[c4d.OCT_MATERIAL_DIFFUSE_LINK] = shd
+      shd[c4d.IMAGETEXTURE_FILE] = "texture.jpg"
+      shd[c4d.IMAGETEXTURE_MODE] = 0
+      shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
+      shd[c4d.IMAGETEX_BORDER_MODE] = 0
+      doc.InsertMaterial(mat)
 
     return super(MaterialImportDialog, self).Command(id, msg)
 
