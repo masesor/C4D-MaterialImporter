@@ -105,3 +105,35 @@ OCT_MATERIAL_xxx
 
 https://pastebin.com/02dZT7cr
 mat_mtl[c4d.OCT_MATERIAL_TYPE] = 2511 # Glossy (2510 Diff 2511 Gls 2513 Spec)
+
+# Regex
+  - Diffuse 
+  diffuse
+  diff
+  albedo
+  col
+  color
+  colour
+
+
+  - Specular (Reflection)
+  _spec
+  specular
+
+  - Roughness (or gloss if inverted)
+  _refl_
+  reflection
+  gloss (invert)
+
+  - Bump 
+  bump
+
+  - Normal 
+  normal
+  nrm
+
+
+  - Displacement
+  displacement
+  disp
+  
