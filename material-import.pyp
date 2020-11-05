@@ -7,95 +7,76 @@ import re
 import json
 import glob
 
-PLUGIN_ID = 1025249
+import constants
+import parser
+# class Material():
+#   def __init__(self):
+#     self.paths = {}
+#     self.name = ''
 
-MATERIAL_IMPORT_DIALOG = 100001
-MATERIAL_DIRECTORY_PATH = 100002
+#   def get_paths(self):
+#     return self.paths
 
-# Octane IDs
-ID_OCTANE_DIFFUSE_MATERIAL = 1029501
-ID_OCTANE_IMAGE_TEXTURE = 1029508
-ID_OCTANE_SPECULAR_TYPE = 2511
-ID_OCTANE_DISPLACEMENT = 1031901
+#   def set_material_path(self, material_type, file_path):
+#     self.paths[material_type] = file_path
 
-# Material IDs
-DIFFUSE = 'DIFFUSE'
-SPECULAR = 'SPECULAR'
-ROUGHNESS = 'ROUGHNESS'
-GLOSS = 'GLOSS'
-BUMP = 'BUMP'
-NORMAL = 'NORMAL'
-DISPLACEMENT = 'DISPLACEMENT'
-AO = "AO"
+#   def get_name(self):
+#     return self.name
 
-class Material():
-  def __init__(self):
-    self.paths = {}
-    self.name = ''
+#   def set_name(self, name):
+#     self.name = name
 
-  def get_paths(self):
-    return self.paths
+#   def is_float(self):
+#     return self.is_float
 
-  def set_material_path(self, material_type, file_path):
-    self.paths[material_type] = file_path
+#   def set_is_float(self, is_float):
+#     self.is_float = is_float
 
-  def get_name(self):
-    return self.name
+# class ParserData():
+#   def __init__(self, regex, material_id, is_float = False):
+#     self.regex = regex
+#     self.material_id = material_id
+#     self.is_float = is_float
 
-  def set_name(self, name):
-    self.name = name
+# class MaterialParser():
+#   parser_data = {
+#     DIFFUSE: ParserData(re.compile('(?i).*(diffuse|diff|albedo|col|color|colour).*'), c4d.OCT_MATERIAL_DIFFUSE_LINK),
+#     SPECULAR: ParserData(re.compile('(?i).*(spec|specular).*'), c4d.OCT_MATERIAL_SPECULAR_LINK, True),
+#     ROUGHNESS: ParserData(re.compile('(?i).*(rough).*'), c4d.OCT_MATERIAL_ROUGHNESS_LINK, True),
+#     GLOSS: ParserData(re.compile('(?i).*(refl|reflection|gloss).*'), True),
+#     BUMP: ParserData(re.compile('(?i).*(bump).*'), c4d.OCT_MATERIAL_BUMP_LINK, True),
+#     NORMAL: ParserData(re.compile('(?i).*(normal|nrm).*'), c4d.OCT_MATERIAL_NORMAL_LINK),
+#     DISPLACEMENT: ParserData(re.compile('(?i).*(displacement|disp).*'), c4d.OCT_MATERIAL_DISPLACEMENT_LINK, True),
+#     AO: ParserData(re.compile('(?i).*(ao).*'), True) 
+#   }
 
-  def is_float(self):
-    return self.is_float
+#   def create_material(self, files, directory):
+#     material = Material()
+#     for file_path in files:
+#       for regex_type, parser_data in self.parser_data.items():
+#         # print("Checking pattern {} for type {} on path {}" % pattern, regex_type, path)
+#         if parser_data.regex.match(file_path):
+#           material.set_material_path(regex_type, file_path)
+#           material.set_is_float(parser_data.is_float)
+#           self.set_material_name(material, directory)
+#           continue
+#     return material
 
-  def set_is_float(self, is_float):
-    self.is_float = is_float
+#   def set_material_name(self, material, directory):
+#     manifest_data = self.read_json_manifest(directory)
+#     if not manifest_data:
+#       split_path = directory.split(os.sep)
+#       material_name = split_path[len(split_path)]
+#     material.set_name(manifest_data['name'] if manifest_data else material_name)
 
-class ParserData():
-  def __init__(self, regex, material_id, is_float = False):
-    self.regex = regex
-    self.material_id = material_id
-    self.is_float = is_float
+#   def read_json_manifest(self, directory):
+#     manifest_file = [f for f in os.listdir(directory) if f.endswith('.json')][0]
 
-class MaterialParser():
-  parser_data = {
-    DIFFUSE: ParserData(re.compile('(?i).*(diffuse|diff|albedo|col|color|colour).*'), c4d.OCT_MATERIAL_DIFFUSE_LINK),
-    SPECULAR: ParserData(re.compile('(?i).*(spec|specular).*'), c4d.OCT_MATERIAL_SPECULAR_LINK, True),
-    ROUGHNESS: ParserData(re.compile('(?i).*(rough).*'), c4d.OCT_MATERIAL_ROUGHNESS_LINK, True),
-    GLOSS: ParserData(re.compile('(?i).*(refl|reflection|gloss).*'), True),
-    BUMP: ParserData(re.compile('(?i).*(bump).*'), c4d.OCT_MATERIAL_BUMP_LINK, True),
-    NORMAL: ParserData(re.compile('(?i).*(normal|nrm).*'), c4d.OCT_MATERIAL_NORMAL_LINK),
-    DISPLACEMENT: ParserData(re.compile('(?i).*(displacement|disp).*'), c4d.OCT_MATERIAL_DISPLACEMENT_LINK, True),
-    AO: ParserData(re.compile('(?i).*(ao).*'), True) 
-  }
-
-  def create_material(self, files, directory):
-    material = Material()
-    for file_path in files:
-      for regex_type, parser_data in self.parser_data.items():
-        # print("Checking pattern {} for type {} on path {}" % pattern, regex_type, path)
-        if parser_data.regex.match(file_path):
-          material.set_material_path(regex_type, file_path)
-          material.set_is_float(parser_data.is_float)
-          self.set_material_name(material, directory)
-          continue
-    return material
-
-  def set_material_name(self, material, directory):
-    manifest_data = self.read_json_manifest(directory)
-    if not manifest_data:
-      split_path = directory.split(os.sep)
-      material_name = split_path[len(split_path)]
-    material.set_name(manifest_data['name'] if manifest_data else material_name)
-
-  def read_json_manifest(self, directory):
-    manifest_file = [f for f in os.listdir(directory) if f.endswith('.json')][0]
-
-    if manifest_file:
-      with open(directory + os.sep + manifest_file, 'r') as manifest:
-        data = manifest.read()
+#     if manifest_file:
+#       with open(directory + os.sep + manifest_file, 'r') as manifest:
+#         data = manifest.read()
       
-        return json.loads(data)
+#         return json.loads(data)
 
 class Walker():
   def print_files(self, path):
@@ -112,30 +93,30 @@ class Walker():
   def get_directories(self, path):
     return [join(path, f) for f in os.listdir(path) if isdir(join(path, f))]
 
-def create_octane_image_texture(file_path, is_float = False):
-  shd = c4d.BaseShader(ID_OCTANE_IMAGE_TEXTURE)
+# def create_octane_image_texture(file_path, is_float = False):
+#   shd = c4d.BaseShader(ID_OCTANE_IMAGE_TEXTURE)
   
-  shd[c4d.IMAGETEXTURE_FILE] = file_path
-  shd[c4d.IMAGETEXTURE_MODE] = 1 if is_float else 0
-  shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
-  shd[c4d.IMAGETEX_BORDER_MODE] = 0
+#   shd[c4d.IMAGETEXTURE_FILE] = file_path
+#   shd[c4d.IMAGETEXTURE_MODE] = 1 if is_float else 0
+#   shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
+#   shd[c4d.IMAGETEX_BORDER_MODE] = 0
 
-  return shd
+#   return shd
 
-def create_octane_displacement(file_path):
-  shd = c4d.BaseShader(ID_OCTANE_DISPLACEMENT)
+# def create_octane_displacement(file_path):
+#   shd = c4d.BaseShader(ID_OCTANE_DISPLACEMENT)
 
-  # image_texture = create_octane_image_texture(file_path)
+#   # image_texture = create_octane_image_texture(file_path)
   
-  return shd
+#   return shd
 
 class MaterialImportDialog(c4d.gui.GeDialog):
   def CreateLayout(self):
-    return self.LoadDialogResource(MATERIAL_IMPORT_DIALOG)
+    return self.LoadDialogResource(constants.MATERIAL_IMPORT_DIALOG)
 
   def Command(self, id, msg):
-    if (id == MATERIAL_DIRECTORY_PATH):
-      current_path = self.GetString(MATERIAL_DIRECTORY_PATH)
+    if (id == constants.MATERIAL_DIRECTORY_PATH):
+      current_path = self.GetString(constants.MATERIAL_DIRECTORY_PATH)
       materials = self.get_materials_from_path(current_path)      
       for material in materials:
         specular_material = self.CreateOctaneSpecularMaterial(material)
@@ -150,16 +131,16 @@ class MaterialImportDialog(c4d.gui.GeDialog):
     directories = walker.get_directories(file_path)
 
     materials = []
-    material_parser = MaterialParser()
+    # material_parser = MaterialParser()
     for directory in directories:
       files = walker.get_files(directory)
-      materials.append(material_parser.create_material(files, directory))
+      materials.append(parser.create_material(files, directory))
 
     return materials
 
   def CreateOctaneSpecularMaterial(self, material):
-    mat = c4d.BaseMaterial(ID_OCTANE_DIFFUSE_MATERIAL)
-    mat[c4d.OCT_MATERIAL_TYPE] = ID_OCTANE_SPECULAR_TYPE
+    mat = c4d.BaseMaterial(constants.ID_OCTANE_DIFFUSE_MATERIAL)
+    mat[c4d.OCT_MATERIAL_TYPE] = constants.ID_OCTANE_SPECULAR_TYPE
 
     for material_type, texture_path in material.get_paths().items():
       shader = create_octane_image_texture(texture_path)      
@@ -187,7 +168,7 @@ class MaterialImportCommandData(c4d.plugins.CommandData):
             self.dialog = MaterialImportDialog()
 
         # Opens the dialog
-        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=PLUGIN_ID, defaulth=400, defaultw=400)
+        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=constants.PLUGIN_ID, defaulth=400, defaultw=400)
 
     def RestoreLayout(self, sec_ref):
         """
@@ -201,7 +182,7 @@ class MaterialImportCommandData(c4d.plugins.CommandData):
             self.dialog = MaterialImportDialog()
 
         # Restores the layout
-        return self.dialog.Restore(pluginid=PLUGIN_ID, secret=sec_ref)
+        return self.dialog.Restore(pluginid=constants.PLUGIN_ID, secret=sec_ref)
 
 
 
