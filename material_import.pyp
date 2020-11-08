@@ -6,9 +6,12 @@ from os.path import isfile, isdir, join
 import re
 import json
 import glob
+import sys
 
+sys.path.append(c4d.storage.GeGetStartupPath() + "\\plugins\\MaterialImport")
 import constants
-import parser
+import material_parser
+import material
 # class Material():
 #   def __init__(self):
 #     self.paths = {}
@@ -116,39 +119,42 @@ class MaterialImportDialog(c4d.gui.GeDialog):
 
   def Command(self, id, msg):
     if (id == constants.MATERIAL_DIRECTORY_PATH):
-      current_path = self.GetString(constants.MATERIAL_DIRECTORY_PATH)
-      materials = self.get_materials_from_path(current_path)      
-      for material in materials:
-        specular_material = self.CreateOctaneSpecularMaterial(material)
-        doc = c4d.documents.GetActiveDocument()
-        doc.InsertMaterial(specular_material)
-
+      self.handle_open_directory()
     return super(MaterialImportDialog, self).Command(id, msg)
+
+  def handle_open_directory(self):
+    current_path = self.GetString(constants.MATERIAL_DIRECTORY_PATH)
+    material_paths = self.get_materials_from_path(current_path)      
+    for material_path in material_paths:
+      print("Loading material from {}".format(material_path.get_name()))
+      specular_material = material.create_octane_specular_material(material_path)
+      doc = c4d.documents.GetActiveDocument()
+      doc.InsertMaterial(specular_material)
+
 
   def get_materials_from_path(self, file_path):
     walker = Walker()
-    walker.print_dirs(file_path)
+    # walker.print_dirs(file_path)
     directories = walker.get_directories(file_path)
 
     materials = []
-    # material_parser = MaterialParser()
     for directory in directories:
       files = walker.get_files(directory)
-      materials.append(parser.create_material(files, directory))
+      materials.append(material_parser.create_material(files, directory))
 
     return materials
 
-  def CreateOctaneSpecularMaterial(self, material):
-    mat = c4d.BaseMaterial(constants.ID_OCTANE_DIFFUSE_MATERIAL)
-    mat[c4d.OCT_MATERIAL_TYPE] = constants.ID_OCTANE_SPECULAR_TYPE
+  # def CreateOctaneSpecularMaterial(self, material):
+  #  mat = c4d.BaseMaterial(constants.ID_OCTANE_DIFFUSE_MATERIAL)
+  #  mat[c4d.OCT_MATERIAL_TYPE] = constants.ID_OCTANE_SPECULAR_TYPE
 
-    for material_type, texture_path in material.get_paths().items():
-      shader = create_octane_image_texture(texture_path)      
-      mat[MaterialParser.parser_data[material_type].material_id] = shader
-      mat.InsertShader(shader)
-    mat.SetName(material.get_name())
+  #  for material_type, texture_path in material.get_paths().items():
+  #    shader = create_octane_image_texture(texture_path)      
+  #    mat[MaterialParser.parser_data[material_type].material_id] = shader
+  #    mat.InsertShader(shader)
+  #  mat.SetName(material.get_name())
 
-    return mat
+  #  return mat
 
 class MaterialImportCommandData(c4d.plugins.CommandData):
     """
@@ -187,8 +193,9 @@ class MaterialImportCommandData(c4d.plugins.CommandData):
 
 
 if __name__ == "__main__":
+
     # Registers the Command plugin
-    c4d.plugins.RegisterCommandPlugin(id=PLUGIN_ID, #TODO UPDATE
+    c4d.plugins.RegisterCommandPlugin(id=constants.PLUGIN_ID, #TODO UPDATE
                                       str="Material Importer",
                                       help="Imports materials for Octane Renderer.",
                                       info=0,
