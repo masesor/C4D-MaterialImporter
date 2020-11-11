@@ -19,14 +19,8 @@ class Material():
     def set_name(self, name):
         self.__name = name
 
-    def is_float(self):
-        return self.__is_float
 
-    def set_is_float(self, is_float):
-        self.__is_float = is_float
-
-
-def create_octane_image_texture(file_path, is_float=False):
+def create_octane_image_texture(file_path, is_float):
     shd = c4d.BaseShader(constants.ID_OCTANE_IMAGE_TEXTURE)
 
     shd[c4d.IMAGETEXTURE_FILE] = file_path
@@ -36,11 +30,10 @@ def create_octane_image_texture(file_path, is_float=False):
 
     return shd
 
-
 def create_octane_displacement(file_path):
-    shd = c4d.BaseShader(ID_OCTANE_DISPLACEMENT)
+    shd = c4d.BaseShader(constants.ID_OCTANE_DISPLACEMENT)
 
-    # image_texture = create_octane_image_texture(file_path)
+    # image_texture = create_octane_image_texture(file_path) TODO - How to add texture to displacement node?
     return shd
 
 def create_octane_specular_material(material):
@@ -48,9 +41,15 @@ def create_octane_specular_material(material):
     mat[c4d.OCT_MATERIAL_TYPE] = constants.ID_OCTANE_SPECULAR_TYPE
 
     for material_type, texture_path in material.get_paths().items():
-      shader = create_octane_image_texture(texture_path)      
+      is_float = material_parser.PARSER_DATA[material_type].is_float()
+      shader = None
+      if material_type is constants.DISPLACEMENT:
+        shader = create_octane_displacement(texture_path)
+      else:
+        shader = create_octane_image_texture(texture_path, is_float)
       mat[material_parser.PARSER_DATA[material_type].get_material_id()] = shader
       mat.InsertShader(shader)
+
     mat.SetName(material.get_name())
 
     return mat
