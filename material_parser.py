@@ -35,14 +35,17 @@ PARSER_DATA = {
 	
 def create_material(files, directory):
   material = Material()
+  valid_material = False
   for file_path in files:
     for regex_type, data in PARSER_DATA.items():
       file_name = get_file_name_from_path(file_path)
       if data.get_regex().match(file_name):
+        print("match {} file {}".format(regex_type, file_name))
+        valid_material = True
         material.set_material_path(regex_type, file_path)
         set_material_name(material, directory, file_name)
         break
-  return material
+  return material if valid_material else None
 
 def set_material_name(material, directory, file_name):
   manifest_data = read_json_manifest(directory)
