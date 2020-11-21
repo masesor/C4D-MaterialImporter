@@ -26,7 +26,7 @@ PARSER_DATA = {
   constants.DIFFUSE: ParserData(re.compile('(?i).*(diffuse|diff|albedo|col|color|colour).*'), c4d.OCT_MATERIAL_DIFFUSE_LINK),
   constants.SPECULAR: ParserData(re.compile('(?i).*(spec|specular|refl|reflection).*'), c4d.OCT_MATERIAL_SPECULAR_LINK, True),
   constants.ROUGHNESS: ParserData(re.compile('(?i).*(rough).*'), c4d.OCT_MATERIAL_ROUGHNESS_LINK, True),
-  # constants.GLOSS: ParserData(re.compile('(?i).*(refl|reflection|gloss).*'), True),
+  constants.GLOSS: ParserData(re.compile('(?i).*(refl|reflection|gloss).*'), c4d.OCT_MATERIAL_ROUGHNESS_LINK, True),
   constants.BUMP: ParserData(re.compile('(?i).*(bump).*'), c4d.OCT_MATERIAL_BUMP_LINK, True),
   constants.NORMAL: ParserData(re.compile('(?i).*(normal|nrm).*'), c4d.OCT_MATERIAL_NORMAL_LINK),
   constants.DISPLACEMENT: ParserData(re.compile('(?i).*(displacement|disp).*'), c4d.OCT_MATERIAL_DISPLACEMENT_LINK, True)
