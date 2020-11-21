@@ -13,22 +13,9 @@ import material
 class Walker():
   fileExtensions = [ "exr", "jpg", "jpeg", "png", "bmp", "gif" ]
 
-  def print_files(self, path):
-    onlyfiles = [join(path, f) for f in os.listdir(path) if isfile(join(path, f))]
-    print(onlyfiles)
-
   def get_files(self, path):
-    # return [join(path, f) for f in os.listdir(path) if isfile(join(path, f))]
     files = [files for files in [glob(os.path.join(path, "*." + extension)) for extension in self.fileExtensions] if len(files) > 0]
-    return files[0] if len(files) > 0 else []
-    # return [files for files in [glob(os.path.join(path, "*." + extension)) for extension in self.fileExtensions] if len(files) > 0][0]
-
-  def print_dirs(self, path):
-    onlyfiles = [join(path, f) for f in os.listdir(path) if isdir(join(path, f))]
-    print(onlyfiles)
-
-  def get_directories(self, path):
-    return [join(path, f) for f in os.listdir(path) if isdir(join(path, f))]
+    return [y for x in files for y in x]
 
 
 class MaterialImportDialog(c4d.gui.GeDialog):
@@ -51,13 +38,9 @@ class MaterialImportDialog(c4d.gui.GeDialog):
 
   def get_materials_from_path(self, file_path):
     walker = Walker()
-    directories = walker.get_directories(file_path)
-    current_directory_files = walker.get_files(file_path)
-
     materials = []
     for (root, _, _) in os.walk(file_path, topdown = True): 
       files = walker.get_files(root)
-      print(files)
       material = material_parser.create_material(files, root)
       if material:
         materials.append(material)

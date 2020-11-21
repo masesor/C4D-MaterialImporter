@@ -20,13 +20,13 @@ class Material():
         self.__name = name
 
 
-def create_octane_image_texture(file_path, is_float):
+def create_octane_image_texture(file_path, is_float, is_gloss):
     shd = c4d.BaseShader(constants.ID_OCTANE_IMAGE_TEXTURE)
-
     shd[c4d.IMAGETEXTURE_FILE] = file_path
     shd[c4d.IMAGETEXTURE_MODE] = 1 if is_float else 0
     shd[c4d.IMAGETEXTURE_GAMMA] = 2.2
     shd[c4d.IMAGETEX_BORDER_MODE] = 0
+    shd[c4d.IMAGETEXTURE_INVERT] = is_gloss
 
     return shd
 
@@ -46,7 +46,7 @@ def create_octane_specular_material(material):
       if material_type is constants.DISPLACEMENT:
         shader = create_octane_displacement(texture_path)
       else:
-        shader = create_octane_image_texture(texture_path, is_float)
+        shader = create_octane_image_texture(texture_path, is_float, material_type == constants.GLOSS)
       mat[material_parser.PARSER_DATA[material_type].get_material_id()] = shader
       mat.InsertShader(shader)
 
