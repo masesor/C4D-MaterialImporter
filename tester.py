@@ -30,7 +30,7 @@ class MaterialImportDialog():
     self.handle_open_directory()
 
   def handle_open_directory(self):
-    current_path = "D:\Cloud\Documents\Sams Stuff\Resources\VFX\Assets\STOCK IMAGES\TEXTURES\RD-Textures\RDT Collection 1\RDT-Collection-one_direct_1of7"
+    current_path = ""
     # print("path {}".format(current_path))
     material_data = self.get_materials_from_path(current_path)      
     for data in material_data:
